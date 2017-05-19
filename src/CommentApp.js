@@ -1,18 +1,22 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 import CommentInput from './CommentInput'
 import CommentList from './CommentList'
+import wrapWithLoadData from './wrapWithLoadData'
 
 class CommentApp extends Component {
-    constructor() {
-        super()
+
+    static propTypes = {
+        data: PropTypes.any,
+        saveData: PropTypes.func.isRequired
+    }
+
+    constructor(props) {
+        super(props)
         this.state = {
-            comments: []
+            comments:props.data            
         }
     }
 
-    componentWillMount() {
-        this._loadComments()
-    }
 
 
     handeSubmitComment(comment) {
@@ -22,31 +26,14 @@ class CommentApp extends Component {
         const comments = this.state.comments
         comments.push(comment)
         this.setState({ comments })
-        this._saveComments(comments)
-
-
+        this.props.saveData(comments)
     }
 
-    hanleDeleteComment(index){
-        console.log(index)
-        const comments=this.state.comments
-        comments.splice(index,1)
-        this.setState({comments})
-        this._saveComments(comments)
-    }
-
-    _loadComments() {
-        let comments = localStorage.getItem('comments')
-        if (comments) {
-            comments = JSON.parse(comments)
-            this.setState({
-                comments
-            })
-        }
-    }
-
-    _saveComments(comments) {
-        localStorage.setItem('comments', JSON.stringify(comments))
+    hanleDeleteComment(index) {
+        const comments = this.state.comments
+        comments.splice(index, 1)
+        this.setState({ comments })
+        this.props.saveData(comments)
     }
 
     render() {
@@ -54,7 +41,7 @@ class CommentApp extends Component {
             <div className='wrapper'>
                 <CommentInput
                     onSubmit={this.handeSubmitComment.bind(this)} />
-                <CommentList 
+                <CommentList
                     comments={this.state.comments}
                     onDeleteComment={this.hanleDeleteComment.bind(this)} />
             </div>
@@ -62,4 +49,5 @@ class CommentApp extends Component {
     }
 }
 
+CommentApp = wrapWithLoadData(CommentApp, 'comments')
 export default CommentApp
